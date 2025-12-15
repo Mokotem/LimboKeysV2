@@ -1,0 +1,231 @@
+﻿
+using System.Numerics;
+
+namespace LimboKeys;
+
+public static class Interpolation
+{
+    public delegate float MoveFloat(float a, float b, float t);
+    public delegate Color MoveColor(Color a, Color b, float t);
+    public delegate Vector2 MoveVector(Vector2 a, Vector2 b, float t);
+
+    public static float Linear(float a, float b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        return (a * (1 - t)) + (b * t);
+    }
+    public static float EaseIn(float a, float b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float k = t * t;
+        return (a * (1 - k)) + (b * k);
+    }
+
+    public static float EaseOut(float a, float b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float k = t * (2 - t);
+        return (a * (1 - k)) + (b * k);
+    }
+
+    public static float EaseInOut(float a, float b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float s = float.Sin((float.Pi * t) / 2f);
+        float k = s * s;
+        return (a * (1 - k)) + (b * k);
+    }
+
+    public static Point EaseInOut(Point a, Point b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float s = float.Sin((float.Pi * t) / 2f);
+        float k = s * s;
+        return new Point(
+            (int)float.Round(a.X * (1 - k) + (b.X * k)),
+            (int)float.Round(a.Y * (1 - k) + (b.Y * k)));
+    }
+
+    public static float CubeIn(float a, float b, float t, byte exp = 4)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float k = float.Pow(t, exp);
+        return (a * (1 - k)) + (b * k);
+    }
+
+
+    public static float CubeOut(float a, float b, float t, byte exp = 4)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float k = 1 - float.Pow(t - 1, exp);
+        return (a * (1 - k)) + (b * k);
+    }
+
+    public static float BackIn(float a, float b, float t, float k = 4)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float t2 = t * t;
+        float t3 = t2 * t;
+        float q = -t3 + (2 * t2) + (k * (t3 - t2));
+        return (a * (1 - q)) + (b * q);
+    }
+
+    public static float BackOut(float a, float b, float t, float k = 4)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float t2 = t * t;
+        float t3 = t2 * t;
+        float q = t2 - t3 + t + k * (t3 - (2 * t2) + t);
+        return (a * (1 - q)) + (b * q);
+    }
+
+    public static float BackInOut(float a, float b, float t, float k = 1)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float teta = t * float.Pi;
+        float q = float.Pow(float.Sin(teta / 2f), 2) - (k * float.Sin(teta) * float.Sin(2 * teta));
+        return (a * (1 - q)) + (b * q);
+    }
+
+    public static float Triangle(float a, float b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return a;
+        float q = 1 - (2 * float.Abs(t - 0.5f));
+        return a * (1 - q) + (b * q);
+    }
+
+    public static float Parable(float a, float b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return a;
+        float q = float.Sin(float.Pi * t);
+        float q2 = q * q;
+        return a * (1 - q2) + (b * q2);
+    }
+
+    private const float sqrt6 = 2.449489742783178f;
+    public static float BounceOut(float a, float b, float t, bool twoBounces = false)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float q = 0;
+        if (twoBounces)
+            q = float.Min(4 * t * t, 4 * float.Pow(t - (3f / 4f), 2) + (3f / 4f));
+        else
+        {
+            float sxc = 6 * t * t;
+            q = float.Min(
+                sxc,
+                float.Min(
+                    sxc - (3 * sqrt6 * t) + 3,
+                    sxc - (2 * t * (sqrt6 + 3)) + (2 * sqrt6) + 1
+                    ));
+        }
+        return (a * (1 - q)) + (b * q);
+    }
+
+    public static Vector2 Linear(Vector2 a, Vector2 b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        return (a * (1 - t)) + (b * t);
+    }
+    public static Vector2 EaseIn(Vector2 a, Vector2 b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float k = t * t;
+        return (a * (1 - k)) + (b * k);
+    }
+
+    public static Vector2 EaseOut(Vector2 a, Vector2 b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float k = t * (2 - t);
+        return (a * (1 - k)) + (b * k);
+    }
+
+    public static Vector2 EaseInOut(Vector2 a, Vector2 b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float s = float.Sin((float.Pi * t) / 2f);
+        float k = s * s;
+        return (a * (1 - k)) + (b * k);
+    }
+
+    public static Vector2 CubeIn(Vector2 a, Vector2 b, float t, byte exp = 4)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float k = float.Pow(t, exp);
+        return (a * (1 - k)) + (b * k);
+    }
+
+
+    public static Vector2 CubeOut(Vector2 a, Vector2 b, float t, byte exp = 4)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float k = 1 - float.Pow(t - 1, exp);
+        return (a * (1 - k)) + (b * k);
+    }
+
+    public static Vector2 BackIn(Vector2 a, Vector2 b, float t, float k = 4)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float t2 = t * t;
+        float t3 = t2 * t;
+        float q = -t3 + (2 * t2) + (k * (t3 - t2));
+        return (a * (1 - q)) + (b * q);
+    }
+
+    public static Vector2 BackOut(Vector2 a, Vector2 b, float t, float k = 4)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float t2 = t * t;
+        float t3 = t2 * t;
+        float q = t2 - t3 + t + k * (t3 - (2 * t2) + t);
+        return (a * (1 - q)) + (b * q);
+    }
+
+    public static Vector2 BackInOut(Vector2 a, Vector2 b, float t, float k = 1)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return b;
+        float teta = t * float.Pi;
+        float q = float.Pow(float.Sin(teta / 2f), 2) - (k * float.Sin(teta) * float.Sin(2 * teta));
+        return (a * (1 - q)) + (b * q);
+    }
+
+    public static Vector2 Triangle(Vector2 a, Vector2 b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return a;
+        float q = 1 - (2 * float.Abs(t - 0.5f));
+        return a * (1 - q) + (b * q);
+    }
+
+    public static Vector2 Parable(Vector2 a, Vector2 b, float t)
+    {
+        if (t <= 0) return a;
+        if (t >= 1) return a;
+        float q = float.Sin(float.Pi * t);
+        float q2 = q * q;
+        return a * (1 - q2) + (b * q2);
+    }
+}
