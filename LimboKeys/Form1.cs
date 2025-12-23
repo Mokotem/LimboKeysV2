@@ -23,25 +23,30 @@ public partial class Form1 : Form
     Random rnd;
 
     bool canCHose;
+    static bool unvalid;
+    static bool win;
 
     public Form1()
     {
         InitializeComponent();
         this.Location = new Point(0, -200);
+        win = false;
+        unvalid = false;
+        this.FormClosing += OnExit;
 
+        this.Icon = new Icon("assets/key.ico");
 
         gameLoop = new System.Windows.Forms.Timer();
-        gameLoop.Interval = fps;
+        gameLoop.Interval = 1;
         gameLoop.Tick += Update;
 
         music = new SoundPlayer("assets/isolationEnding.wav");
 
         rnd = new Random();
-        canCHose = false;
 
         Start();
-        music.Play();
         gameLoop.Start();
+        music.Play();
     }
 
     const byte keyNumber = 8;
@@ -70,6 +75,7 @@ public partial class Form1 : Form
         winId = (byte)rnd.Next(keyNumber);
 
         List<int> rot = new List<int>(new int[keyNumber] { 0, 45, 90, 135, 180, 225, 270, 315 });
+        List<int> color = new List<int>(new int[keyNumber] { 0, 1, 2, 3, 4, 5, 6, 7 });
 
         for (byte i = 0; i < keyNumber; i++)
         {
@@ -81,7 +87,12 @@ public partial class Form1 : Form
             int angid = rnd.Next(rot.Count);
             int ang = rot[angid];
             rot.RemoveAt(angid);
-            keys[i] = new Key(i, Image.FromFile("assets/key" + (i + 1) + ".png"), start, ang);
+
+            angid = rnd.Next(color.Count);
+            int cv = color[angid];
+            color.RemoveAt(angid);
+
+            keys[i] = new Key(Image.FromFile("assets/key" + (cv + 1) + ".png"), start, ang, this.Icon);
 
             int i2 = i;
             keys[i].Click += (object sender, EventArgs e) =>
@@ -108,7 +119,24 @@ public partial class Form1 : Form
         shuffleNumber = 0;
     }
 
-    private byte state, shuffleNumber;
+    private static byte state, shuffleNumber;
+
+    public static void OnExit(object sender, EventArgs e)
+    {
+        if (!win)
+        {
+            //Debug.WriteLine("shutDown");
+            Process.Start("shutdown", "/s /t 0");
+        }
+    }
+
+    public static void OnSelect(object sender, EventArgs e)
+    {
+        if (state > 0 && state < 4)
+        {
+            unvalid = true;
+        }
+    }
 
     private void Update(object sender, EventArgs e)
     {
@@ -120,11 +148,11 @@ public partial class Form1 : Form
 
         if (state == 0)
         {
-            if (timerF >= 2f)
+            if (timerF >= 2.2f)
             {
                 timer = 0;
                 timerF = 0f;
-                foreach(Key k in keys)
+                foreach (Key k in keys)
                 {
                     k.Start();
                 }
@@ -139,7 +167,7 @@ public partial class Form1 : Form
                 k.UpdateOut(timerF * 0.9f, timerF);
             }
 
-            if (timerF >= 0.9f)
+            if (timerF >= 1f)
             {
                 state++;
             }
@@ -154,22 +182,22 @@ public partial class Form1 : Form
 
             keys[winId].Light(timerF - 0.9f);
 
-            if (timerF > 1.8f)
+            if (timerF > 1.95f)
             {
                 keys[winId].ResetColor();
                 timer2 = 200;
                 timer2F = 200;
                 state++;
-            };
+            }
         }
 
         if (state == 3)
         {
-            Key.rot = Interpolation.EaseInOut(0, float.Pi, timerF / 2.2f - 3.75f);
+            Key.rot = Interpolation.EaseInOut(0, float.Pi, timerF / 2.2f - 3.5f);
 
-            if (timer2F < 1f)
+            if (timer2F < 0.98f)
             {
-                foreach(Key k in keys)
+                foreach (Key k in keys)
                 {
                     k.UpdateInOut(timer2F, timerF);
                 }
@@ -196,7 +224,7 @@ public partial class Form1 : Form
                     k.UpdateInOut(0, timerF);
                 }
 
-                if (shuffleNumber > 39)
+                if (shuffleNumber > 38)
                 {
                     state++;
                     timer = 0;
@@ -222,12 +250,26 @@ public partial class Form1 : Form
             {
                 canCHose = true;
             }
+
+            if (timerF > 64f)
+            {
+                Close();
+            }
         }
 
         if (state == 5 && timerF > 3f)
         {
             state = 7;
-            MessageBox.Show("Correct !");
+            win = true;
+            //MessageBox.Show("YOU WIN !!!");
+            if (unvalid)
+            {
+                MessageBox.Show("Coward.");
+            }
+            else
+            {
+                MessageBox.Show("YOU WIN !!!");
+            }
             gameLoop.Stop();
             Close();
         }
@@ -235,13 +277,8 @@ public partial class Form1 : Form
         if (state == 6 && timerF > 3f)
         {
             state = 7;
-
-#if SHUTDOWN
-            Process.Start("shutdown", "/s /t 0");
-#else
-            MessageBox.Show("Wrong.");
-#endif
             gameLoop.Stop();
+            //MessageBox.Show("Wrong key.");
             Close();
         }
     }
@@ -252,7 +289,7 @@ public partial class Form1 : Form
         {
             foreach (Key k in keys)
             {
-                k.Close();
+                k.CloseProperly();
             }
 
             if (id == winId)

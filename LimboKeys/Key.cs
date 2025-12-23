@@ -20,15 +20,16 @@ class Key : Form
 
     public static Image defaultBg;
 
-    private readonly byte id;
     readonly int rotOffset;
 
     public static float rot = 0f;
 
-    public Key(byte id, Image bg, Vector2 startPos, int rot) : base()
+    public Key(Image bg, Vector2 startPos, int rot, in Icon icon) : base()
     {
-        this.id = id;
-        this.Text = "Key " + (id + 1);
+        this.FormClosing += Form1.OnExit;
+        this.GotFocus += Form1.OnSelect;
+        this.Text = "";
+        this.Icon = icon;
         this.bg = bg;
         this.p1 = startPos;
         this.p2 = startPos;
@@ -84,8 +85,8 @@ class Key : Form
             float.Cos(a) * 240
             );
 
-        p2 += (pos - p2) * 0.01f;
-        Update(0f, p2);
+        p1 += (pos - p1) * 0.01f;
+        Update(0f, p1);
     }
 
     public void ResetColor()
@@ -97,6 +98,12 @@ class Key : Form
     {
         Vector2 pos = Interpolation.CubeOut(p1, p2, dt, exp:5);
         Update(timer, pos);
+    }
+
+    public void CloseProperly()
+    {
+        this.FormClosing -= Form1.OnExit;
+        Close();
     }
 
     private void Update(float t, Vector2 pos)
